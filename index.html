@@ -15,24 +15,23 @@
         <span id="save-status">✓ Salvo</span>
         <h3>Mapa de Entregas Pro</h3>
 
-        <div class="search-box" style="background: #fff3cd; border-color: #ffeeba;">
-            <strong>🏠 Definir Ponto de Partida (Base)</strong>
-            <p style="font-size: 11px; margin: 5px 0;">Endereço da sua loja/depósito:</p>
-            <input type="text" id="base-address" placeholder="Rua, número, Cidade - SP">
-            <button class="btn-action" style="background: #856404; color: white;" onclick="setBase()">Definir Base</button>
+        <div class="search-box base-box">
+            <strong>🏠 Ponto de Partida (Base)</strong>
+            <input type="text" id="base-address" placeholder="Endereço da sua loja">
+            <button class="btn-action btn-base" onclick="setBase()">Definir Base</button>
         </div>
 
-        <div class="search-box" style="background: #e8f0fe;">
+        <div class="search-box consult-box">
             <strong>📍 Consultar Cliente</strong>
             <input type="text" id="check-address" placeholder="Endereço do cliente">
             <button class="btn-action btn-check" onclick="checkAddress()">Localizar e Calcular</button>
-            <div id="result-calc" style="margin-top: 10px; font-weight: bold; font-size: 13px; color: #1a73e8;"></div>
+            <div id="result-calc"></div>
         </div>
 
         <hr>
 
-        <h4>1. Configurar Região</h4>
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;">
+        <h4>1. Selecione o Dia para Marcar</h4>
+        <div class="day-grid">
             <button class="day-btn" id="btn-seg" onclick="selectDay('Segunda', '#d9534f', this)">Seg</button>
             <button class="day-btn" id="btn-ter" onclick="selectDay('Terça', '#5cb85c', this)">Ter</button>
             <button class="day-btn" id="btn-qua" onclick="selectDay('Quarta', '#428bca', this)">Qua</button>
@@ -40,26 +39,26 @@
             <button class="day-btn" id="btn-sex" onclick="selectDay('Sexta', '#9b59b6', this)">Sex</button>
         </div>
 
-        <div id="config-container" style="display:none; margin-top: 15px;" class="search-box">
-            <strong>Região: <span id="display-day">...</span></strong>
-            <input type="text" id="bairro-input" placeholder="Nome do Bairro (Opcional)">
+        <div id="config-container" class="search-box" style="display:none; margin-top: 15px;">
+            <strong>Configurar <span id="display-day">...</span></strong>
+            <input type="text" id="bairro-input" placeholder="Nome do Bairro ou Região">
             
-            <div style="margin-top:10px; padding: 10px; border: 1px dashed #ccc;">
-                <label style="font-size: 11px; font-weight: bold;">Tipo de Cobrança:</label>
-                <select id="pricing-type" onchange="togglePricingFields()" style="width: 100%; padding: 5px; margin: 5px 0;">
+            <div class="pricing-group">
+                <label>Tipo de Cobrança:</label>
+                <select id="pricing-type">
                     <option value="fixed">Taxa Fixa (R$)</option>
                     <option value="km">Por Distância (R$/km)</option>
                 </select>
-                <input type="number" id="price-value" placeholder="Valor (ex: 15 ou 2.50)">
+                <input type="number" id="price-value" placeholder="Valor (ex: 10.00)">
             </div>
 
-            <button class="btn-action btn-add" onclick="searchBairro()">Adicionar Bairro Oficial</button>
-            <p style="font-size: 10px; color: #666; text-align: center; margin-top: 10px;">Ou use o <b>ícone de polígono</b> no mapa para desenhar livremente.</p>
+            <button class="btn-action btn-add" onclick="searchBairro()">Salvar Bairro Oficial</button>
+            <p class="hint">Ou use a ferramenta de desenho no mapa.</p>
         </div>
 
         <div class="backup-section">
-            <button class="btn-action btn-backup" onclick="exportData()">📥 Backup</button>
-            <button class="btn-action" style="background: #fff; border: 1px solid #d9534f; color: #d9534f;" onclick="clearAll()">Resetar Mapa</button>
+            <button class="btn-action btn-backup" onclick="exportData()">📥 Exportar Backup</button>
+            <button class="btn-action btn-clear" onclick="clearAll()">Apagar Tudo</button>
         </div>
     </div>
 
