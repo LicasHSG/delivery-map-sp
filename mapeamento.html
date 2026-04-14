@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Entregas SP - Persistent</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; background: #f0f2f5; }
+        
+        #sidebar { width: 380px; background: #ffffff; padding: 20px; box-sizing: border-box; overflow-y: auto; box-shadow: 4px 0 10px rgba(0,0,0,0.1); z-index: 1000; }
+        #map { flex-grow: 1; height: 100%; z-index: 1; }
+        
+        h3 { margin-top: 0; font-size: 18px; color: #1a73e8; border-bottom: 2px solid #e8f0fe; padding-bottom: 8px; margin-bottom: 15px; }
+        h4 { margin: 20px 0 10px 0; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Botões dos dias */
+        .day-btn { width: 100%; padding: 10px; margin-bottom: 8px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
+        .day-btn.active { outline: 3px solid #333; transform: scale(1.02); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        
+        #btn-seg { background-color: #d9534f; }
+        #btn-ter { background-color: #5cb85c; }
+        #btn-qua { background-color: #428bca; }
+        #btn-qui { background-color: #f0ad4e; }
+        #btn-sex { background-color: #9b59b6; }
+
+        .search-box { background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 15px; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; font-size: 13px; margin-top: 5px; }
+        
+        .btn-action { width: 100%; padding: 10px; margin-top: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-add { background: #1a73e8; color: white; }
+        .btn-check { background: #34a853; color: white; }
+        
+        /* Área de Backup */
+        .backup-section { margin-top: 30px; border-top: 2px dashed #eee; padding-top: 15px; }
+        .btn-backup { background: #6c757d; color: white; font-size: 12px; margin-top: 5px; }
+        .input-file { font-size: 11px; margin-top: 10px; width: 100%; }
+
+        .bairro-tooltip { background: white; font-weight: bold; border: 2px solid #333; padding: 4px 8px; border-radius: 4px; text-align: center; }
+        .preco-tag { color: #2d8a41; font-size: 14px; display: block; }
+        
+        #save-status { font-size: 11px; color: #34a853; font-weight: bold; float: right; display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <span id="save-status">✓ Salvo</span>
+        <h3>Mapa de Entregas</h3>
+
+        <div class="search-box" style="background: #e8f0fe;">
+            <strong>📍 Consultar Endereço</strong>
+            <input type="text" id="check-address" placeholder="Rua, número, Bairro - Cidade" onkeypress="if(event.key==='Enter') checkAddress()">
+            <button class="btn-action btn-check" onclick="checkAddress()">Localizar no Mapa</button>
+        </div>
+
+        <hr>
+
+        <h4>1. Selecione o Dia</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;">
+            <button class="day-btn" id="btn-seg" onclick="selectDay('Segunda', '#d9534f', this)">Seg</button>
+            <button class="day-btn" id="btn-ter" onclick="selectDay('Terça', '#5cb85c', this)">Ter</button>
+            <button class="day-btn" id="btn-qua" onclick="selectDay('Quarta', '#428bca', this)">Qua</button>
+            <button class="day-btn" id="btn-qui" onclick="selectDay('Quinta', '#f0ad4e', this)">Qui</button>
+            <button class="day-btn" id="btn-sex" onclick="selectDay('Sexta', '#9b59b6', this)">Sex</button>
+        </div>
+
+        <div id="config-container" style="display:none; margin-top: 15px;" class="search-box">
+            <strong>Região de <span id="display-day">...</span></strong>
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <div style="flex: 2;">
+                    <label style="font-size: 11px;">Bairro/Cidade:</label>
+                    <input type="text" id="bairro-input" placeholder="Ex: Santana">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 11px;">Taxa R$:</label>
+                    <input type="number" id="preco-input" placeholder="0.00" step="0.50">
+                </div>
+            </div>
+            <button class="btn-action btn-add" onclick="searchBairro()">Adicionar Região</button>
+        </div>
+
+        <div class="backup-section">
+            <h4>Segurança dos Dados</h4>
+            <button class="btn-action btn-backup" onclick="exportData()">📥 Baixar Backup (Arquivo)</button>
+            <p style="font-size: 10px; color: #999; margin: 5px 0;">Use o botão abaixo para restaurar um backup antigo:</p>
+            <input type="file" id="import-file" class="input-file" onchange="importData(event)">
+            <button class="btn-action" style="background: #fff; border: 1px solid #d9534f; color: #d9534f; margin-top: 20px;" onclick="clearAll()">Apagar Tudo</button>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        let currentDay = null;
+        let currentColor = null;
+        let addressMarker = null; 
+        const dayColors = {'Segunda':'#d9534f','Terça':'#5cb85c','Quarta':'#428bca','Quinta':'#f0ad4e','Sexta':'#9b59b6'};
+        const SP_VIEWBOX = "-47.20,-24.10,-45.70,-23.20";
+
+        var map = L.map('map').setView([-23.5505, -46.6333], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(map);
+
+        var drawnItems = new L.FeatureGroup().addTo(map);
+
+        // --- LÓGICA DE PERSISTÊNCIA ---
+
+        // Salva automaticamente no LocalStorage do navegador
+        function autoSave() {
+            let out = {};
+            drawnItems.eachLayer(l => {
+                if(!out[l.day]) out[l.day] = [];
+                out[l.day].push({ nome: l.bairro, preco: l.preco, geojson: l.rawGeoJSON });
+            });
+            localStorage.setItem('mapa_entregas_sp_v4', JSON.stringify(out));
+            
+            // Feedback visual de salvo
+            const status = document.getElementById('save-status');
+            status.style.display = 'block';
+            setTimeout(() => { status.style.display = 'none'; }, 2000);
+        }
+
+        // Carrega os dados ao abrir a página
+        function loadSavedData() {
+            let data = JSON.parse(localStorage.getItem('mapa_entregas_sp_v4'));
+            if(data) {
+                for(let d in data) {
+                    data[d].forEach(i => renderBairro(i.geojson, i.nome, d, dayColors[d], i.preco, false));
+                }
+            }
+        }
+
+        // Exporta para um arquivo físico (Segurança extra)
+        function exportData() {
+            const data = localStorage.getItem('mapa_entregas_sp_v4');
+            if(!data || data === "{}") return alert("Não há dados para exportar.");
+            
+            const blob = new Blob([data], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_mapa_entregas_${new Date().toLocaleDateString().replace(/\//g,'-')}.json`;
+            a.click();
+        }
+
+        // Importa de um arquivo físico
+        function importData(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if(confirm("Isso irá substituir seu mapa atual. Continuar?")) {
+                        drawnItems.clearLayers();
+                        for(let d in imported) {
+                            imported[d].forEach(i => renderBairro(i.geojson, i.nome, d, dayColors[d], i.preco, false));
+                        }
+                        autoSave();
+                        alert("Dados importados com sucesso!");
+                    }
+                } catch(err) { alert("Arquivo inválido."); }
+            };
+            reader.readAsText(event.target.files[0]);
+        }
+
+        // --- FUNÇÕES DE MAPA ---
+
+        function selectDay(day, color, btn) {
+            currentDay = day;
+            currentColor = color;
+            document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('display-day').innerText = day;
+            document.getElementById('display-day').style.color = color;
+            document.getElementById('config-container').style.display = 'block';
+            document.getElementById('bairro-input').focus();
+        }
+
+        async function searchBairro() {
+            let q = document.getElementById('bairro-input').value;
+            let p = document.getElementById('preco-input').value || "0.00";
+            if(!q) return alert("Digite o nome do bairro.");
+            
+            try {
+                let url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&viewbox=${SP_VIEWBOX}&bounded=1&countrycodes=br&format=json&polygon_geojson=1&limit=1`;
+                let resp = await fetch(url);
+                let data = await resp.json();
+
+                if(data.length > 0 && data[0].geojson.type.includes('Polygon')) {
+                    renderBairro(data[0].geojson, data[0].display_name.split(',')[0], currentDay, currentColor, parseFloat(p).toFixed(2), true);
+                    document.getElementById('bairro-input').value = "";
+                    document.getElementById('preco-input').value = "";
+                } else { alert("Bairro não localizado em SP."); }
+            } catch (e) { alert("Erro na busca."); }
+        }
+
+        function renderBairro(geoData, nome, dia, cor, preco, shouldSave) {
+            let layer = L.geoJSON(geoData, {
+                style: { color: cor, fillColor: cor, fillOpacity: 0.5, weight: 2 }
+            });
+
+            layer.eachLayer(l => {
+                l.day = dia;
+                l.bairro = nome;
+                l.preco = preco;
+                l.rawGeoJSON = geoData;
+                
+                l.bindTooltip(`${nome} (${dia})<br><span class="preco-tag">Taxa: R$ ${preco.replace('.',',')}</span>`, { 
+                    permanent: true, direction: "center", className: 'bairro-tooltip' 
+                });
+                
+                l.on('click', () => { 
+                    if(confirm(`Remover ${l.bairro}?`)) {
+                        drawnItems.removeLayer(l);
+                        autoSave();
+                    }
+                });
+                drawnItems.addLayer(l);
+            });
+            
+            if(shouldSave) {
+                map.fitBounds(layer.getBounds());
+                autoSave();
+            }
+        }
+
+        async function checkAddress() {
+            let addr = document.getElementById('check-address').value;
+            if(!addr) return;
+            try {
+                let url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&viewbox=${SP_VIEWBOX}&bounded=1&countrycodes=br&format=json&limit=1`;
+                let resp = await fetch(url);
+                let data = await resp.json();
+                if(data.length > 0) {
+                    if(addressMarker) map.removeLayer(addressMarker);
+                    addressMarker = L.marker([data[0].lat, data[0].lon]).addTo(map)
+                        .bindPopup(`<b>Endereço Cliente:</b><br>${data[0].display_name}`).openPopup();
+                    map.setView([data[0].lat, data[0].lon], 15);
+                } else { alert("Endereço não localizado."); }
+            } catch (e) { alert("Erro na busca."); }
+        }
+
+        function clearAll() {
+            if(confirm("Isso apagará TODAS as regiões e taxas. Tem certeza?")) {
+                drawnItems.clearLayers();
+                localStorage.removeItem('mapa_entregas_sp_v4');
+                if(addressMarker) map.removeLayer(addressMarker);
+            }
+        }
+
+        loadSavedData();
+    </script>
+</body>
+</html>
