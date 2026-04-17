@@ -4,7 +4,7 @@ let baseMarker = null;
 let clientMarker = null;
 let baseCoords = JSON.parse(localStorage.getItem('base_entregas_sp')) || null;
 
-const dayColors = {'Segunda':'#d9534f','Terça':'#5cb85c','Quarta':'#428bca','Quinta':'#f0ad4e','Sexta':'#9b59b6'};
+const dayColors = {'Segunda':'#e4d941','Terça':'#acc05e','Quarta':'#dac37b','Quinta':'#a3c6d1','Sexta':'#acc05e'};
 const SP_VIEWBOX = "-47.20,-24.10,-45.70,-23.20";
 
 // Inicializa o Mapa
