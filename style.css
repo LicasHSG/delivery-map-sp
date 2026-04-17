@@ -133,11 +133,11 @@ select:focus {
     box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
 }
 
-#btn-seg { background-color: #f1e641; }
-#btn-ter { background-color: #c9e06b; }
-#btn-qua { background-color: #f1e1ae; }
-#btn-qui { background-color: #c3e5f0; }
-#btn-sex { background-color: #c9e06b; }
+#btn-seg { background-color: #e4d941; }
+#btn-ter { background-color: #acc05e; }
+#btn-qua { background-color: #dac37b; }
+#btn-qui { background-color: #a3c6d1; }
+#btn-sex { background-color: #acc05e; }
 
 /* =========================================
    BACKUP E STATUS
