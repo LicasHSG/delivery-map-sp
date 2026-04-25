@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Entregas Pro - SP</title>
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -18,13 +17,35 @@
         <div class="search-box base-box">
             <strong>🏠 Ponto de Partida (Base)</strong>
             <input type="text" id="base-address" placeholder="Endereço da sua loja">
-            <button class="btn-action btn-base" onclick="setBase()">Definir Base</button>
+            <button class="btn-action" style="background:#333; color:#fff;" onclick="setBase()">Definir Base</button>
+        </div>
+
+        <div class="search-box visual-box">
+            <strong>📏 Adicionar Raios Individuais</strong>
+            <div style="display: flex; gap: 10px; margin: 10px 0;">
+                <div style="flex: 2;">
+                    <input type="number" id="single-ring-value" placeholder="Dist. (km)" min="1">
+                </div>
+                <button class="btn-action" style="background: #28a745; color: white; flex: 1; margin: 5px 0;" onclick="addOneRing()">
+                    + Adicionar
+                </button>
+            </div>
+
+            <button class="btn-action" style="background: #dc3545; color: white;" onclick="clearRings()">
+                Limpar Todos os Raios
+            </button>
+
+            <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                <label style="font-size: 13px; cursor: pointer;">
+                    <input type="checkbox" id="toggle-labels" onchange="toggleLabels()"> Ocultar nomes das regiões
+                </label>
+            </div>
         </div>
 
         <div class="search-box consult-box">
             <strong>📍 Consultar Cliente</strong>
             <input type="text" id="check-address" placeholder="Endereço do cliente">
-            <button class="btn-action btn-check" onclick="checkAddress()">Localizar e Calcular</button>
+            <button class="btn-action btn-check" style="background:#34a853; color:#fff;" onclick="checkAddress()">Localizar e Calcular</button>
             <div id="result-calc"></div>
         </div>
 
@@ -42,23 +63,20 @@
         <div id="config-container" class="search-box" style="display:none; margin-top: 15px;">
             <strong>Configurar <span id="display-day">...</span></strong>
             <input type="text" id="bairro-input" placeholder="Nome do Bairro ou Região">
-            
-            <div class="pricing-group">
-                <label>Tipo de Cobrança:</label>
-                <select id="pricing-type">
-                    <option value="fixed">Taxa Fixa (R$)</option>
-                    <option value="km">Por Distância (R$/km)</option>
-                </select>
-                <input type="number" id="price-value" placeholder="Valor (ex: 10.00)">
+
+            <div class="pricing-group" style="margin-top: 10px;">
+                <label style="font-size: 12px; color:#555;">Valores da Região:</label>
+                <input type="number" id="price-near" placeholder="Preço Perto (R$)">
+                <input type="number" id="price-far" placeholder="Preço Longe (R$)">
             </div>
 
-            <button class="btn-action btn-add" onclick="searchBairro()">Salvar Bairro Oficial</button>
-            <p class="hint">Ou use a ferramenta de desenho no mapa.</p>
+            <button class="btn-action btn-add" style="background:#1a73e8; color:#fff;" onclick="searchBairro()">Salvar Bairro Oficial</button>
+            <p style="font-size: 11px; color: #666; text-align: center; margin-top: 5px;">Ou use a ferramenta de desenho no mapa.</p>
         </div>
 
         <div class="backup-section">
-            <button class="btn-action btn-backup" onclick="exportData()">📥 Exportar Backup</button>
-            <button class="btn-action btn-clear" onclick="clearAll()">Apagar Tudo</button>
+            <button class="btn-action btn-backup" style="background:#6c757d; color:#fff;" onclick="exportData()">📥 Exportar Backup</button>
+            <button class="btn-action btn-clear" style="background:#dc3545; color:#fff;" onclick="clearAll()">Apagar Tudo</button>
         </div>
     </div>
 
